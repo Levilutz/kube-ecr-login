@@ -27,19 +27,19 @@ So what solution is implemented here? Run a cluster CronJob that pulls new ECR c
 3. Just run `kubectl apply -f kube-ecrlogin.yaml`.
 
 ## Building yourself
-Want to build this yourself? It's easy.
+Want to build the images yourself? It's easy.
 
 ### Requirements
 * A linux machine / VM (this won't build inside a container as-is).
 * Installed `curl`, `unzip`, `buildah`.
-  * These all come pre-installed on github actions ubuntu runners.
+  * These all come pre-installed on github actions `ubuntu-latest` runners.
 
 ### Steps
 1. Clone this repo into your linux machine.
 2. Just run `./build_main.sh` and `./build_sidecar.sh`.
 3. Feel free to `buildah tag` and `buildah push` the images wherever you want them.
 
-For a reference on exactly what to do, this repo's github build action does everything automatically on every push.
+For a reference on exactly what to do, this repo's github [build action](.github/workflows/build.yml) does everything automatically on every push.
 
 ## Methods
 The CronJob spins up a pod with two containers:

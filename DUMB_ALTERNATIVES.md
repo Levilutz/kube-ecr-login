@@ -4,7 +4,7 @@ I've seen quite a few suggestions for how to resolve this differently from how I
 
 * "_Just auth to ECR before every single image pull._" Firstly, I have yet to find a clean way to accomplish this in vanilla kubernetes. Secondly, this is likely to require throwing precious AWS credentials all over the cluster whenever any image needs to pull.
 
-* "_Just give your EKS cluster permission to pull from your ECR repositories._" This only works if you're deployed on EKS. EKS is expensive ($72/mo base + the cost of nodes), so I avoid it for smaller projects.
+* "_Just give your EKS cluster permission to pull from your ECR repositories._" This only works if you're deployed on EKS. EKS is expensive ($72/cluster/month base + the cost of EC2 instances), so I avoid it for smaller projects.
 
 * "_Just manually give the cluster ECR creds before you start deploying stuff._" What if the cluster has issues the next day and needs to pull new images? The creds you gave it when you initially deployed are long-expired, so your cluster is unable to recover from the failure without manual intervention. 
 
