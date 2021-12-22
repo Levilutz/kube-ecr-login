@@ -12,7 +12,7 @@ buildah add $container kubectl /usr/local/bin/kubectl
 buildah run $container chmod u+x /usr/local/bin/kubectl
 
 echo "Configuring container"
-buildah config --cmd "kubectl proxy" $container
+buildah config --cmd "kubectl proxy --port 8080" $container
 buildah config --port 8001/tcp $container
 buildah config --author "Levi Lutz (contact.levilutz@gmail.com)" $container
 
