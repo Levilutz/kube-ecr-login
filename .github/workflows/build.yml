@@ -23,13 +23,25 @@ jobs:
       - name: Push Main
         run: |
           repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-main
-          buildah tag kube-ecrlogin-main $repo:$GITHUB_SHA $repo:latest
+          buildah tag kube-ecrlogin-main $repo:$GITHUB_SHA
           buildah push $repo:$GITHUB_SHA
+
+      - name: Push Main, Tag latest
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-main
+          buildah tag kube-ecrlogin-main $repo:latest
           buildah push $repo:latest
 
       - name: Push Sidecar
         run: |
           repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-sidecar
-          buildah tag kube-ecrlogin-sidecar $repo:$GITHUB_SHA $repo:latest
+          buildah tag kube-ecrlogin-sidecar
           buildah push $repo:$GITHUB_SHA
+
+      - name: Push Sidecar, Tag latest
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-sidecar
+          buildah tag kube-ecrlogin-sidecar $repo:latest
           buildah push $repo:latest
