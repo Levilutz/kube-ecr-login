@@ -36,7 +36,7 @@ jobs:
       - name: Push Sidecar
         run: |
           repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-sidecar
-          buildah tag kube-ecrlogin-sidecar
+          buildah tag kube-ecrlogin-sidecar $repo:$GITHUB_SHA
           buildah push $repo:$GITHUB_SHA
 
       - name: Push Sidecar, Tag latest
