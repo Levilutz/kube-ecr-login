@@ -1,28 +1,28 @@
 # kube-ecrlogin
 
-A minimal kube cronjob that re-auths to AWS ECR and stores output in a cluster secret.
+A minimal kubernetes CronJob that re-auths to AWS ECR and stores the credentials in a cluster Secret.
 
 ## Purpose
 
 Let's say I want to deploy a containerized application of mine to a kubernetes cluster. For privacy, I keep the images in some private AWS ECR repositories.
 
-Now my cluster needs to be able to pull from those repositories 24/7. Unfortunately, however, a login for ECR is only valid for 12 hours. How do I ensure my cluster can always pull images from the ECR repos? A few 'easy' solutions to this might come to mind at first, but many of them have shortcomings.
+Now my cluster needs to be able to pull from those repositories 24/7. Unfortunately, however, a login for ECR is only valid for 12 hours. How do I ensure my cluster can always pull images from the ECR repos? A few 'easy' solutions to this might come to mind at first, but [many of them have shortcomings](DUMB_ALTERNATIVES.md).
 
-So what solution is implemented here? Run a cluster CronJob that pulls new ECR credentials every <12 hours and stores them in a cluster Secret. I chose every 4 hours to be safe, but this can easily be changed in kube-ecrlogin.yaml:L0.
+So what solution is implemented here? Run a cluster CronJob that pulls new ECR credentials every <12 hours and stores them in a cluster Secret. I chose every 4 hours to be safe, but this can easily be changed in `kube-ecrlogin.yaml`.
 
 ## Usage
 
 ### Requirements
 * A running kubernetes cluster.
-* At least one ECR repository that I'm pulling from.
+* At least one ECR repository to pull images from.
 * AWS credentials with ECR Pull access.
 
 ### Steps
 1. (Optional) Copy the `kube-ecrlogin.yaml` file wherever you want it.
 2. Add cluster Secrets for AWS stuff:
-  * `AWS_ACCESS_KEY_ID`: As documented
-  * `AWS_SECRET_ACCESS_KEY`: As documented
-  * `AWS_DEFAULT_REGION`: As documented
+  * `AWS_ACCESS_KEY_ID`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_access_key_id.html)
+  * `AWS_SECRET_ACCESS_KEY`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_secret_access_key.html)
+  * `AWS_DEFAULT_REGION`: [As documented](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-region)
   * `AWS_ECR_SERVER`: Eg. `12345678901234.dkr.ecr.us-east-1.amazonaws.com`
 3. Just run `kubectl apply -f kube-ecrlogin.yaml`.
 
@@ -42,7 +42,7 @@ Want to build this yourself? It's easy.
 For a reference on exactly what to do, this repo's github build action does everything automatically on every push.
 
 ## Methods
-The CronHob spins up a pod with two containers:
+The CronJob spins up a pod with two containers:
 * The main container, which runs `main_entrypoint.sh`.
 * The sidecar container, which proxies the cluster's kubernetes API.
 
@@ -61,5 +61,5 @@ If any step except (3) fails, the CronJob fails.
 2. This currently only authenticates to a _single_ ECR server. Multiple of this CronJob would not enable multiple servers; the jobs would just overwrite each others' secrets.
 
 ## Future Work
-* Modify the kube object configuration to ensure that the job runs at least once per cycle (see kube docs here). 
+* Modify the kube object configuration to ensure that the job runs at least once per cycle ([see kube docs here](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#cron-job-limitations)).
 * Package with Helm.
