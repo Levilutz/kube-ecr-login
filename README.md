@@ -24,8 +24,9 @@ So what solution is implemented here? Run a cluster CronJob that pulls new ECR c
   * `AWS_DEFAULT_REGION`: [As documented](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-region)
   * `AWS_ECR_SERVER`: Eg. `12345678901234.dkr.ecr.us-east-1.amazonaws.com`
 2. Prepare your local environment for `kubectl`, through `KUBECONFIG` or however else you choose.
-3. If your cluster has RBAC, run `kubectl apply --overwrite -f kube-ecrlogin-rbac.yaml`. If not, run `kubectl apply --overwrite -f kube-ecrlogin.yaml`.
+3. If your cluster has RBAC, run `kubectl apply --overwrite -f deploy/kube-ecrlogin-rbac.yaml`. If not, run `kubectl apply --overwrite -f deploy/kube-ecrlogin.yaml`.
   * You can check if RBAC is enabled with `kubectl api-versions | grep rbac`. If you get any results along the lines of `rbac.authorization.k8s.io/v1`, your cluster probably has it enabled. 
+4. Add `imagePullSecrets` to the PodSpecs with ECR-stored images, [as described here](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret). 
 
 ### Removing from Cluster
 Don't want or need this anymore? Just run the provided script: `bash uninstall.sh`
