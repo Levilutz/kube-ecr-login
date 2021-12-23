@@ -18,7 +18,7 @@ So what solution is implemented here? Run a cluster CronJob that pulls new ECR c
 * AWS credentials with ECR Pull access.
 
 ### Steps
-1. Add cluster Secrets for AWS stuff. The easiest way to do this is by running the provided script, which expects four positional arguments: `bash aws_secret.sh <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY> <AWS_DEFAULT_REGION> <AWS_ECR_SERVER>`
+1. Add cluster Secrets for AWS stuff. The easiest way to do this is by running the provided script, which expects four positional arguments: `bash scripts/aws_secret.sh <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY> <AWS_DEFAULT_REGION> <AWS_ECR_SERVER>`
   * `AWS_ACCESS_KEY_ID`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_access_key_id.html)
   * `AWS_SECRET_ACCESS_KEY`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_secret_access_key.html)
   * `AWS_DEFAULT_REGION`: [As documented](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-region)
@@ -29,7 +29,7 @@ So what solution is implemented here? Run a cluster CronJob that pulls new ECR c
 4. Add `imagePullSecrets` to the PodSpecs with ECR-stored images, [as described here](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret). 
 
 ### Removing from Cluster
-Don't want or need this anymore? Just run the provided script: `bash uninstall.sh`
+Don't want or need this anymore? Just run the provided script: `bash scripts/uninstall.sh`
 
 ## Building yourself
 Want to build the images yourself? It's easy.
@@ -48,7 +48,7 @@ For a reference on exactly what to do, this repo's github [build action](.github
 
 ## Methods
 The CronJob spins up a pod with two containers:
-* The main container, which runs `main_entrypoint.sh`.
+* The main container, which runs `main/entrypoint.sh`.
 * The sidecar container, which proxies the cluster's kubernetes API.
 
 The sidecar enables our script to modify the cluster it lives in. `kubectl` can 'magically' configure itself for the cluster in this case, and `proxy` proxies the external cluster to port 8080 on the pod. Containers in a pod share a host IP and ports, so the main container can freely connect to `localhost:8080` (the default) and execute its actions.
