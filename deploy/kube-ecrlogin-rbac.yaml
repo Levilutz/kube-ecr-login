@@ -39,7 +39,7 @@ spec:
           serviceAccountName: kube-ecrlogin
           containers:
           - name: sidecar
-            image: docker.io/levilutz/kube-ecrlogin-sidecar:97c3bb18319b78bf11efae2cc0e78f3ad47290a6
+            image: docker.io/levilutz/kube-ecrlogin-sidecar:latest
             imagePullPolicy: Always
             ports:
               - containerPort: 8080
@@ -49,7 +49,7 @@ spec:
                   command:
                   - /wait_until_ready.sh
           - name: main
-            image: docker.io/levilutz/kube-ecrlogin-main:97c3bb18319b78bf11efae2cc0e78f3ad47290a6
+            image: docker.io/levilutz/kube-ecrlogin-main:latest
             imagePullPolicy: Always
             env:
             - name: AWS_ACCESS_KEY_ID
