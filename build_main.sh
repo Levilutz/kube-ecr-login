@@ -22,9 +22,9 @@ buildah copy $container aws /aws
 buildah run $container /aws/install
 
 echo "Installing netcat on container"
-buildah run $container apt-get update
-buildah run $container apt-get install netcat
-buildah run $container apt-get clean
+buildah run $container apt-get update -y
+buildah run $container apt-get install -y netcat
+buildah run $container apt-get clean -y
 
 echo "Copying entrypoint to container"
 buildah copy $container main_entrypoint.sh /entrypoint.sh
