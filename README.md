@@ -18,13 +18,17 @@ So what solution is implemented here? Run a cluster CronJob that pulls new ECR c
 * AWS credentials with ECR Pull access.
 
 ### Steps
-1. (Optional) Copy the `kube-ecrlogin.yaml` file wherever you want it.
-2. Add cluster Secrets for AWS stuff:
+1. Add cluster Secrets for AWS stuff. The easiest way to do this is by running the provided script, which expects four positional arguments: `bash aws_secret.sh <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY> <AWS_DEFAULT_REGION> <AWS_ECR_SERVER>`
   * `AWS_ACCESS_KEY_ID`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_access_key_id.html)
   * `AWS_SECRET_ACCESS_KEY`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_secret_access_key.html)
   * `AWS_DEFAULT_REGION`: [As documented](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-region)
   * `AWS_ECR_SERVER`: Eg. `12345678901234.dkr.ecr.us-east-1.amazonaws.com`
-3. Just run `kubectl apply -f kube-ecrlogin.yaml`.
+2. Prepare your local environment for `kubectl`, through `KUBECONFIG` or however else you choose.
+3. If your cluster has RBAC, run `kubectl apply --overwrite -f kube-ecrlogin-rbac.yaml`. If not, run `kubectl apply --overwrite -f kube-ecrlogin.yaml`.
+  * You can check if RBAC is enabled with `kubectl api-versions | grep rbac`. If you get any results along the lines of `rbac.authorization.k8s.io/v1`, your cluster probably has it enabled. 
+
+### Removing from Cluster
+Don't want or need this anymore? Just run the provided script: `bash uninstall.sh`
 
 ## Building yourself
 Want to build the images yourself? It's easy.
@@ -46,7 +50,7 @@ The CronJob spins up a pod with two containers:
 * The main container, which runs `main_entrypoint.sh`.
 * The sidecar container, which proxies the cluster's kubernetes API.
 
-The sidecar enables our script to modify the cluster it lives in. `kubectl` can 'magically' configure itself for the cluster in this case, and `proxy` proxies the external cluster to port 8080 on the pod. Containers in a pod share a host IP and ports, so the other container can freely connect to `localhost:8080` (the default) and execute its actions.
+The sidecar enables our script to modify the cluster it lives in. `kubectl` can 'magically' configure itself for the cluster in this case, and `proxy` proxies the external cluster to port 8080 on the pod. Containers in a pod share a host IP and ports, so the main container can freely connect to `localhost:8080` (the default) and execute its actions.
 
 The main container goes through four small steps:
 1. Validates `kubectl` can connect to the cluster.
@@ -56,8 +60,19 @@ The main container goes through four small steps:
 
 If any step except (3) fails, the CronJob fails.
 
+The sidecar uses a little hackery to start and stop properly. This is necessary, as more native support for sidecar containers has unfortunately been pending for many years (see kubernetes #a #b #c). 
+
+The first requirement is for the main container to not start until the sidecar has fully spun-up. To ensure this, we take advantage of how kubernetes starts up containers in a pod. When provided a list of containers in a PodSpec, it starts them in sequence. However, it doesn't wait for a container to be fully alive before moving on to the next.
+
+To hack the desired behavior in, we add a `wait_until_ready.sh` script to the sidecar's postStart lifecycle hooks. Kubernetes will be stuck in that lifecycle hook until the script exits. Technically, this script just repeatedly checks to see if anything is stening on localhost port 8080. If it sees something listening, it exits happily and kubernetes moves on to starting the main container. If nothing is found after 60 seconds, it fails.
+
+The second requirement is for the sidecar container to exit once the main container finishes its tasks. Without any hacking, the main container will finish but the sidecar container will stay alive indefinitely. Since one of its containers is forever alive, the Pod will never think itself completed, thus the Job will never think itself done.
+
+To resolve this, the sidecar starts its proxy in the background, then starts a netcat listener on port 54345. The netcat distribution on alpine linux allows a `-e` argument, which executes a program when a connection is received. An empty script is supplied, and the resulting behavior is that the netcat listener on the sidecar closes as soon as a connection is made to it. After the close, the sidecar finds the `kubectl proxy` process and kills it, then happily exits. To trigger this behavior, the main container makes a netcat connection with a timeout of 1s, then happily exits itself.
+
 ## Limitations
-1. This only authenticates to AWS ECR servers.
+1. This only authenticates to AWS ECR servers, not any other type of private docker server.
+  * Most of the work here _should_ be re-usable for other providers though.
 2. This currently only authenticates to a _single_ ECR server. Multiple of this CronJob would not enable multiple servers; the jobs would just overwrite each others' secrets.
 
 ## Future Work
