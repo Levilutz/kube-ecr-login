@@ -13,6 +13,13 @@ echo "Adding kubectl to container"
 buildah add $container kubectl /usr/local/bin/kubectl
 buildah run $container chmod u+x /usr/local/bin/kubectl
 
+echo "Installing lsof on container"
+buildah run $container apk update
+buildah run $container apk add --no-cache lsof
+
+echo "Copying wait script to container"
+buildah copy $container sidecar_wait_until_ready.sh /wait_until_ready.sh
+
 echo "Configuring container"
 buildah config --cmd "kubectl proxy --port 8080" $container
 buildah config --port 8001/tcp $container
