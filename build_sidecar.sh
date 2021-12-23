@@ -17,12 +17,19 @@ echo "Installing lsof on container"
 buildah run $container apk update
 buildah run $container apk add --no-cache lsof
 
+echo "Copying entrypoint to container"
+buildah copy $container sidecar_entrypoint.sh /entrypoint.sh
+
+echo "Copying empty script to container"
+buildah copy $container sidecar_empty.sh /empty.sh
+
 echo "Copying wait script to container"
 buildah copy $container sidecar_wait_until_ready.sh /wait_until_ready.sh
 
 echo "Configuring container"
-buildah config --cmd "kubectl proxy --port 8080" $container
+buildah config --entrypoint "sh /entrypoint.sh" $container
 buildah config --port 8001/tcp $container
+buildah config --port 54345/tcp $container
 buildah config --author "Levi Lutz (contact.levilutz@gmail.com)" $container
 
 echo "Building container to image"

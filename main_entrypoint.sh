@@ -14,3 +14,6 @@ kubectl delete secret regcred || true
 
 echo "Creating new secret"
 kubectl create secret docker-registry regcred --docker-server=$AWS_ECR_SERVER --docker-username=AWS --docker-password=$ecr_pass
+
+echo "Killing sidecar"
+nc -w 1 localhost 54345
