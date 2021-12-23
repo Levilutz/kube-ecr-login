@@ -34,7 +34,7 @@ Don't want or need this anymore? Just run the provided script: `bash uninstall.s
 Want to build the images yourself? It's easy.
 
 ### Requirements
-* A linux machine / VM (this won't build inside a container as-is).
+* A linux machine / VM (the build scripts won't run on a container as-is).
 * Installed `curl`, `unzip`, `buildah`.
   * These all come pre-installed on github actions `ubuntu-latest` runners.
 
@@ -60,15 +60,15 @@ The main container goes through four small steps:
 
 If any step except (3) fails, the CronJob fails.
 
-The sidecar uses a little hackery to start and stop properly. This is necessary, as more native support for sidecar containers has unfortunately been pending for many years (see kubernetes #a #b #c). 
+The sidecar uses a little hackery to start and stop properly. This is necessary, as more native support for sidecar containers has unfortunately been pending for many years, as of December 2021 (see [this](https://github.com/kubernetes/enhancements/issues/753), [this](https://github.com/kubernetes/kubernetes/pull/75099), and [this](https://github.com/kubernetes/kubernetes/issues/25908)). 
 
-The first requirement is for the main container to not start until the sidecar has fully spun-up. To ensure this, we take advantage of how kubernetes starts up containers in a pod. When provided a list of containers in a PodSpec, it starts them in sequence. However, it doesn't wait for a container to be fully alive before moving on to the next.
+The first requirement is for the main container to not start until the sidecar has started it's `kubectl proxy`. To ensure this, we take advantage of how kubernetes starts up containers in a pod. When provided a list of containers in a PodSpec, it starts them in sequence. However, it doesn't wait for a container to be fully alive before moving on to the next.
 
-To hack the desired behavior in, we add a `wait_until_ready.sh` script to the sidecar's postStart lifecycle hooks. Kubernetes will be stuck in that lifecycle hook until the script exits. Technically, this script just repeatedly checks to see if anything is stening on localhost port 8080. If it sees something listening, it exits happily and kubernetes moves on to starting the main container. If nothing is found after 60 seconds, it fails.
+To hack the desired behavior in, we add a `wait_until_ready.sh` script to the sidecar's postStart lifecycle hooks. Kubernetes will be stuck in that lifecycle hook until the wait script exits. Technically, this script just repeatedly checks to see if anything is stening on localhost port 8080. If it sees something listening, it exits happily and kubernetes moves on to starting the main container. If nothing is found after 60 seconds, it fails.
 
 The second requirement is for the sidecar container to exit once the main container finishes its tasks. Without any hacking, the main container will finish but the sidecar container will stay alive indefinitely. Since one of its containers is forever alive, the Pod will never think itself completed, thus the Job will never think itself done.
 
-To resolve this, the sidecar starts its proxy in the background, then starts a netcat listener on port 54345. The netcat distribution on alpine linux allows a `-e` argument, which executes a program when a connection is received. An empty script is supplied, and the resulting behavior is that the netcat listener on the sidecar closes as soon as a connection is made to it. After the close, the sidecar finds the `kubectl proxy` process and kills it, then happily exits. To trigger this behavior, the main container makes a netcat connection with a timeout of 1s, then happily exits itself.
+To resolve this, the sidecar starts its proxy in the background, then starts a netcat listener on port 54345. The netcat distribution on alpine linux allows a `-e` argument, which executes a program when a connection is received. An empty script is supplied, and the resulting behavior is that the netcat listener on the sidecar closes as soon as a connection is made to it. After the close, the sidecar finds its own `kubectl proxy` process and kills it, then happily exits. To trigger this behavior, the main container makes a netcat connection with a timeout of 1s, then happily exits itself.
 
 ## Limitations
 1. This only authenticates to AWS ECR servers, not any other type of private docker server.
