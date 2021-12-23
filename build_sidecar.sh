@@ -34,3 +34,7 @@ buildah config --author "Levi Lutz (contact.levilutz@gmail.com)" $container
 
 echo "Building container to image"
 buildah commit $container kube-ecrlogin-sidecar
+
+echo "Cleaning up"
+buildah rm $container
+rm kubectl

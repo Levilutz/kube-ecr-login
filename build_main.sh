@@ -21,6 +21,11 @@ echo "Adding awscli to container"
 buildah copy $container aws /aws
 buildah run $container /aws/install
 
+echo "Installing netcat on container"
+buildah run $container apt-get update
+buildah run $container apt-get install netcat
+buildah run $container apt-get clean
+
 echo "Copying entrypoint to container"
 buildah copy $container main_entrypoint.sh /entrypoint.sh
 
@@ -30,3 +35,9 @@ buildah config --author "Levi Lutz (contact.levilutz@gmail.com)" $container
 
 echo "Building container to image"
 buildah commit $container kube-ecrlogin-main
+
+echo "Cleaning up"
+buildah rm $container
+rm kubectl
+rm awscliv2.zip
+rm -r aws
