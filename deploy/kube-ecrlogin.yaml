@@ -4,6 +4,7 @@ metadata:
   name: kube-ecrlogin
 spec:
   schedule: "0 */4 * * *"
+  successfulJobsHistoryLimit: 0
   jobTemplate:
     spec:
       template:
