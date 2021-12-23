@@ -40,7 +40,7 @@ Want to build the images yourself? It's easy.
 
 ### Steps
 1. Clone this repo into your linux machine.
-2. Just run `./build_main.sh` and `./build_sidecar.sh`.
+2. Just run `./main/build.sh` and `./sidecar/build.sh`.
 3. Feel free to `buildah tag` and `buildah push` the images wherever you want them.
 
 For a reference on exactly what to do, this repo's github [build action](.github/workflows/build.yml) does everything automatically on every push.

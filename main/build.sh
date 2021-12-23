@@ -27,7 +27,7 @@ buildah run $container apt-get install -y netcat
 buildah run $container apt-get clean -y
 
 echo "Copying entrypoint to container"
-buildah copy $container main_entrypoint.sh /entrypoint.sh
+buildah copy $container main/src/entrypoint.sh /entrypoint.sh
 
 echo "Configuring container"
 buildah config --entrypoint "bash /entrypoint.sh" $container

@@ -11,10 +11,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Main
-        run: ./build_main.sh
+        run: ./main/build.sh
 
       - name: Build Sidecar
-        run: ./build_sidecar.sh
+        run: ./sidecar/build.sh
 
       - name: Login to Docker Hub
         run: |

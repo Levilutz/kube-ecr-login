@@ -18,13 +18,13 @@ buildah run $container apk update
 buildah run $container apk add --no-cache lsof
 
 echo "Copying entrypoint to container"
-buildah copy $container sidecar_entrypoint.sh /entrypoint.sh
+buildah copy $container sidecar/src/entrypoint.sh /entrypoint.sh
 
 echo "Copying empty script to container"
-buildah copy $container sidecar_empty.sh /empty.sh
+buildah copy $container sidecar/src/empty.sh /empty.sh
 
 echo "Copying wait script to container"
-buildah copy $container sidecar_wait_until_ready.sh /wait_until_ready.sh
+buildah copy $container sidecar/src/wait_until_ready.sh /wait_until_ready.sh
 
 echo "Configuring container"
 buildah config --entrypoint "sh /entrypoint.sh" $container
