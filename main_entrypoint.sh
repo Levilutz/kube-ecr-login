@@ -3,7 +3,7 @@
 set -e
 
 echo "Validating connected to cluster"
-kubectl auth can-i '' ''
+kubectl auth can-i 'get' 'secret'
 if [ $? -ne 0 ]; then echo "Failed to connect"; exit 1; fi
 
 echo "Getting ECR password from AWS"
