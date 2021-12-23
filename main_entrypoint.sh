@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+
 set -e
 
 echo "Validating connected to cluster"
