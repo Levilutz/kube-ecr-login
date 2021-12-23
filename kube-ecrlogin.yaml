@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kube-ecrlogin
+spec:
+  schedule: 0 */4 * * *
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sidecar
+            image: docker.io/levilutz/kube-ecrlogin-sidecar:94bad906ef195dc7e5ce2b0999fc265c8e778912
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 8080
+            lifecycle:
+              postStart:
+                exec:
+                  command:
+                  - /wait_until_ready.sh
+          - name: main
+            image: docker.io/levilutz/kube-ecrlogin-main:94bad906ef195dc7e5ce2b0999fc265c8e778912
+            imagePullPolicy: Always
+            env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kube-ecrlogin-aws
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kube-ecrlogin-aws
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: kube-ecrlogin-aws
+                  key: AWS_DEFAULT_REGION
+            - name: AWS_ECR_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: kube-ecrlogin-aws
+                  key: AWS_ECR_SERVER
+          restartPolicy: OnFailure
