@@ -53,23 +53,11 @@ spec:
             imagePullPolicy: Always
             env:
             - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: kube-ecr-login-aws
-                  key: AWS_ACCESS_KEY_ID
+              value: "YOUR AWS_ACCESS_KEY_ID"
             - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: kube-ecr-login-aws
-                  key: AWS_SECRET_ACCESS_KEY
+              value: "YOUR AWS_SECRET_ACCESS_KEY"
             - name: AWS_DEFAULT_REGION
-              valueFrom:
-                secretKeyRef:
-                  name: kube-ecr-login-aws
-                  key: AWS_DEFAULT_REGION
+              value: "YOUR AWS_DEFAULT_REGION"
             - name: AWS_ECR_SERVER
-              valueFrom:
-                secretKeyRef:
-                  name: kube-ecr-login-aws
-                  key: AWS_ECR_SERVER
+              value: "YOUR AWS_ECR_SERVER"
           restartPolicy: OnFailure
