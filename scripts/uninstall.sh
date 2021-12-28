@@ -1,4 +1,4 @@
-kubectl delete cronjob kube-ecrlogin || true
-kubectl delete serviceaccount kube-ecrlogin || true
-kubectl delete clusterrole kube-ecrlogin || true
-kubectl delete clusterrolebinding kube-ecrlogin || true
+kubectl delete cronjob kube-ecr-login || true
+kubectl delete serviceaccount kube-ecr-login || true
+kubectl delete clusterrole kube-ecr-login || true
+kubectl delete clusterrolebinding kube-ecr-login || true

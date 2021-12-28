@@ -1,34 +1,7 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: kube-ecrlogin
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: kube-ecrlogin
-rules:
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "watch", "list", "create", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kube-ecrlogin
-subjects:
-- kind: ServiceAccount
-  name: kube-ecrlogin
-  namespace: default
-roleRef:
-  kind: ClusterRole
-  name: kube-ecrlogin
-  apiGroup: rbac.authorization.k8s.io
----
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: kube-ecrlogin
+  name: kube-ecr-login
 spec:
   schedule: "0 */4 * * *"
   successfulJobsHistoryLimit: 0
@@ -36,7 +9,6 @@ spec:
     spec:
       template:
         spec:
-          serviceAccountName: kube-ecrlogin
           containers:
           - name: sidecar
             image: docker.io/levilutz/kube-ecr-login:latest-sidecar
@@ -55,21 +27,21 @@ spec:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:
                 secretKeyRef:
-                  name: kube-ecrlogin-aws
+                  name: kube-ecr-login-aws
                   key: AWS_ACCESS_KEY_ID
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
-                  name: kube-ecrlogin-aws
+                  name: kube-ecr-login-aws
                   key: AWS_SECRET_ACCESS_KEY
             - name: AWS_DEFAULT_REGION
               valueFrom:
                 secretKeyRef:
-                  name: kube-ecrlogin-aws
+                  name: kube-ecr-login-aws
                   key: AWS_DEFAULT_REGION
             - name: AWS_ECR_SERVER
               valueFrom:
                 secretKeyRef:
-                  name: kube-ecrlogin-aws
+                  name: kube-ecr-login-aws
                   key: AWS_ECR_SERVER
           restartPolicy: OnFailure

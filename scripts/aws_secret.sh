@@ -12,10 +12,10 @@ if [ $# -ne 4 ]; then
 fi
 
 echo "Trying to delete old secret, if it exists"
-kubectl delete secret kube-ecrlogin-aws || true
+kubectl delete secret kube-ecr-login-aws || true
 
 echo "Creating new secret"
-kubectl create secret generic kube-ecrlogin-aws \
+kubectl create secret generic kube-ecr-login-aws \
     --from-literal="AWS_ACCESS_KEY_ID=$1" \
     --from-literal="AWS_SECRET_ACCESS_KEY=$2" \
     --from-literal="AWS_DEFAULT_REGION=$3" \
