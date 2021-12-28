@@ -1,5 +1,9 @@
 # kube-ecrlogin
 
+![Docker Pulls - Main](https://img.shields.io/docker/pulls/levilutz/kube-ecrlogin-main)
+![Docker Pulls - Sidecar](https://img.shields.io/docker/pulls/levilutz/kube-ecrlogin-sidecar)
+
+
 A minimal kubernetes CronJob that re-auths to AWS ECR and stores the credentials in a cluster Secret.
 
 ## Purpose
