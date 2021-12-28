@@ -1,6 +1,6 @@
-# kube-ecrlogin
+# kube-ecr-login
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/levilutz/kube-ecrlogin/Build)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/levilutz/kube-ecr-login/Build)
 ![Docker Pulls](https://img.shields.io/docker/pulls/levilutz/kube-ecr-login)
 
 
@@ -12,7 +12,7 @@ Let's say I want to deploy a containerized application of mine to a kubernetes c
 
 Now my cluster needs to be able to pull from those repositories 24/7. Unfortunately, however, a login for ECR is only valid for 12 hours. How do I ensure my cluster can always pull images from the ECR repos? A few 'easy' solutions to this might come to mind at first, but [many of them have shortcomings](DUMB_ALTERNATIVES.md).
 
-So what solution is implemented here? Run a cluster CronJob that pulls new ECR credentials every <12 hours and stores them in a cluster Secret. I chose every 4 hours to be safe, but this can easily be changed in `kube-ecrlogin.yaml`.
+So what solution is implemented here? Run a cluster CronJob that pulls new ECR credentials every <12 hours and stores them in a cluster Secret. I chose every 4 hours to be safe, but this can easily be changed in `kube-ecr-login.yaml`.
 
 ## Usage
 
@@ -28,7 +28,7 @@ So what solution is implemented here? Run a cluster CronJob that pulls new ECR c
   * `AWS_DEFAULT_REGION`: [As documented](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-region)
   * `AWS_ECR_SERVER`: Eg. `12345678901234.dkr.ecr.us-east-1.amazonaws.com`
 2. Prepare your local environment for `kubectl`, through `KUBECONFIG` or however else you choose.
-3. If your cluster has RBAC, run `kubectl apply --overwrite -f deploy/kube-ecrlogin-rbac.yaml`. If not, run `kubectl apply --overwrite -f deploy/kube-ecrlogin.yaml`.
+3. If your cluster has RBAC, run `kubectl apply --overwrite -f deploy/kube-ecr-login-rbac.yaml`. If not, run `kubectl apply --overwrite -f deploy/kube-ecr-login.yaml`.
   * You can check if RBAC is enabled with `kubectl api-versions | grep rbac`. If you get any results along the lines of `rbac.authorization.k8s.io/v1`, your cluster probably has it enabled. 
 4. Add `imagePullSecrets` to the PodSpecs with ECR-stored images, [as described here](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret). 
 
