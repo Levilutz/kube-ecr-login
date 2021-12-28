@@ -33,7 +33,7 @@ buildah config --port 54345/tcp $container
 buildah config --author "Levi Lutz (contact.levilutz@gmail.com)" $container
 
 echo "Building container to image"
-buildah commit $container kube-ecrlogin-sidecar
+buildah commit $container kube-ecr-login-sidecar
 
 echo "Cleaning up"
 buildah rm $container

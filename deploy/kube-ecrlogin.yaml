@@ -11,7 +11,7 @@ spec:
         spec:
           containers:
           - name: sidecar
-            image: docker.io/levilutz/kube-ecrlogin-sidecar:latest
+            image: docker.io/levilutz/kube-ecr-login:latest-sidecar
             imagePullPolicy: Always
             ports:
               - containerPort: 8080
@@ -21,7 +21,7 @@ spec:
                   command:
                   - /wait_until_ready.sh
           - name: main
-            image: docker.io/levilutz/kube-ecrlogin-main:latest
+            image: docker.io/levilutz/kube-ecr-login:latest-main
             imagePullPolicy: Always
             env:
             - name: AWS_ACCESS_KEY_ID
