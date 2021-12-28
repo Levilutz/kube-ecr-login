@@ -1,6 +1,6 @@
 name: Build
 
-on: [push, workflow_dispatch]
+on: [push]
 
 jobs:
   build:
@@ -20,28 +20,47 @@ jobs:
         run: |
           buildah login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }} ${{ secrets.DOCKER_SERVER }}
 
+      - name: Setup Env
+        run: |
+          repo=${{ secrets.DOCKER_SERVER }}/kube-ecr-login
+          if [ -z $GITHUB_REF_NAME ]
+          then
+            echo "Needs to run from branch"
+            exit 1
+          fi
+          if [ -z $GITHUB_SHA ]
+          then
+            echo "Needs to run from commit"
+            exit 1
+          fi
+          tag_base="$GITHUB_REF_NAME-$GITHUB_SHA"
+          echo "repo=$repo" >> $GITHUB_ENV
+          echo "tag_base=$tag_base" >> $GITHUB_ENV
+
       - name: Push Main
         run: |
-          repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-main
-          buildah tag kube-ecrlogin-main $repo:$GITHUB_SHA
-          buildah push $repo:$GITHUB_SHA
+          repo=${{ env.repo }}
+          tag_base=${{ env.tag_base }}
+          buildah tag kube-ecr-login-main $repo:$tag_base-main
+          buildah push $repo:$tag_base-main
 
       - name: Push Main, Tag latest
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-main
-          buildah tag kube-ecrlogin-main $repo:latest
-          buildah push $repo:latest
+          repo=${{ env.repo }}
+          buildah tag kube-ecr-login-main $repo:latest-main
+          buildah push $repo:latest-main
 
       - name: Push Sidecar
         run: |
-          repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-sidecar
-          buildah tag kube-ecrlogin-sidecar $repo:$GITHUB_SHA
-          buildah push $repo:$GITHUB_SHA
+          repo=${{ env.repo }}
+          tag_base=${{ env.tag_base }}
+          buildah tag kube-ecr-login-sidecar $repo:$tag_base-sidecar
+          buildah push $repo:$tag_base-sidecar
 
       - name: Push Sidecar, Tag latest
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          repo=${{ secrets.DOCKER_SERVER }}/kube-ecrlogin-sidecar
-          buildah tag kube-ecrlogin-sidecar $repo:latest
-          buildah push $repo:latest
+          repo=${{ env.repo }}
+          buildah tag kube-ecr-login-sidecar $repo:latest-sidecar
+          buildah push $repo:latest-sidecar

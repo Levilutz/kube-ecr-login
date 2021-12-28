@@ -34,7 +34,7 @@ buildah config --entrypoint "bash /entrypoint.sh" $container
 buildah config --author "Levi Lutz (contact.levilutz@gmail.com)" $container
 
 echo "Building container to image"
-buildah commit $container kube-ecrlogin-main
+buildah commit $container kube-ecr-login-main
 
 echo "Cleaning up"
 buildah rm $container
