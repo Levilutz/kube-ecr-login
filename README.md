@@ -22,15 +22,16 @@ So what solution is implemented here? Run a cluster CronJob that pulls new ECR c
 * AWS credentials with ECR Pull access.
 
 ### Steps
-1. Add cluster Secrets for AWS stuff. The easiest way to do this is by running the provided script, which expects four positional arguments: `bash scripts/aws_secret.sh <AWS_ACCESS_KEY_ID> <AWS_SECRET_ACCESS_KEY> <AWS_DEFAULT_REGION> <AWS_ECR_SERVER>`
-  * `AWS_ACCESS_KEY_ID`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_access_key_id.html)
-  * `AWS_SECRET_ACCESS_KEY`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_secret_access_key.html)
-  * `AWS_DEFAULT_REGION`: [As documented](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-region)
-  * `AWS_ECR_SERVER`: Eg. `12345678901234.dkr.ecr.us-east-1.amazonaws.com`
-2. Prepare your local environment for `kubectl`, through `KUBECONFIG` or however else you choose.
-3. If your cluster has RBAC, run `kubectl apply --overwrite -f deploy/kube-ecr-login-rbac.yaml`. If not, run `kubectl apply --overwrite -f deploy/kube-ecr-login.yaml`.
-  * You can check if RBAC is enabled with `kubectl api-versions | grep rbac`. If you get any results along the lines of `rbac.authorization.k8s.io/v1`, your cluster probably has it enabled. 
-4. Add `imagePullSecrets` to the PodSpecs with ECR-stored images, [as described here](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret). 
+1. Determine which manifest file is relevant to you. If your cluster has RBAC, you'll be using `deploy/kube-ecr-login-rbac.yaml`. If not, you'll be using `deploy/kube-ecr-login.yaml`.
+    * You can check if RBAC is enabled with `kubectl api-versions | grep rbac`. If you get any results along the lines of `rbac.authorization.k8s.io/v1`, your cluster probably has it enabled.
+2. Modify the manifest file by substituting values for the container's env vars appropriately. This step can be integrated into CI/CD by using `sed` to find-and-replace the placeholder text for each var.
+    * `AWS_ACCESS_KEY_ID`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_access_key_id.html)
+    * `AWS_SECRET_ACCESS_KEY`: [As documented](https://docs.aws.amazon.com/sdkref/latest/guide/setting-global-aws_secret_access_key.html)
+    * `AWS_DEFAULT_REGION`: [As documented](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-region)
+    * `AWS_ECR_SERVER`: Eg. `12345678901234.dkr.ecr.us-east-1.amazonaws.com`
+3. Prepare your local environment for `kubectl` on your cluster, through `KUBECONFIG` or however else you choose.
+4. Run `kubectl apply --overwrite -f deploy/<file-from-earlier>`, with whichever file you selected in step 1. 
+5. Add `imagePullSecrets` to the PodSpecs with ECR-stored images, [as described here](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/#create-a-pod-that-uses-your-secret). 
 
 ### Removing from Cluster
 Don't want or need this anymore? Just run the provided script: `bash scripts/uninstall.sh`
@@ -77,7 +78,7 @@ To resolve this, the sidecar starts its proxy in the background, then starts a n
 
 ## Limitations
 1. This only authenticates to AWS ECR servers, not any other type of private docker server.
-  * Most of the work here _should_ be re-usable for other providers though.
+    * Most of the work here _should_ be re-usable for other providers though.
 2. This currently only authenticates to a _single_ ECR server. Multiple of this CronJob would not enable multiple servers; the jobs would just overwrite each others' secrets.
 
 ## Future Work
