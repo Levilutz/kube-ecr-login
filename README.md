@@ -68,7 +68,7 @@ If any step except (3) fails, the CronJob fails.
 
 The sidecar uses a little hackery to start and stop properly. This is necessary, as more native support for sidecar containers has unfortunately been pending for many years, as of December 2021 (see [this](https://github.com/kubernetes/enhancements/issues/753), [this](https://github.com/kubernetes/kubernetes/pull/75099), and [this](https://github.com/kubernetes/kubernetes/issues/25908)). 
 
-The first requirement is for the main container to not start until the sidecar has started it's `kubectl proxy`. To ensure this, we take advantage of how kubernetes starts up containers in a pod. When provided a list of containers in a PodSpec, it starts them in sequence. However, it doesn't wait for a container to be fully alive before moving on to the next.
+The first requirement is for the main container to not start until the sidecar has started its `kubectl proxy`. To ensure this, we take advantage of how kubernetes starts up containers in a pod. When provided a list of containers in a PodSpec, it starts them in sequence. However, it doesn't wait for a container to be fully alive before moving on to the next.
 
 To hack the desired behavior in, we add a `wait_until_ready.sh` script to the sidecar's postStart lifecycle hooks. Kubernetes will be stuck in that lifecycle hook until the wait script exits. Technically, this script just repeatedly checks to see if anything is stening on localhost port 8080. If it sees something listening, it exits happily and kubernetes moves on to starting the main container. If nothing is found after 60 seconds, it fails.
 
